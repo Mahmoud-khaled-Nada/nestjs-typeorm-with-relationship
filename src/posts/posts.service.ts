@@ -1,48 +1,51 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
+import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Post } from '../utils/database';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IPostsService } from './posts';
 import { CreatePostParams } from 'src/utils/types';
+import { Services } from 'src/utils/constants';
+import { IUserService } from 'src/user/user';
+import { UserNotFoundException } from 'src/common/exceptions/UserNotFound';
 
 @Injectable()
 export class PostsService implements IPostsService {
   constructor(
     @InjectRepository(Post)
     private readonly postRepository: Repository<Post>,
+    @Inject(Services.USERS)
+    private readonly userService: IUserService,
   ) {}
-
-  async create(params: CreatePostParams, userId: number): Promise<Post|any> {
+  async create(params: CreatePostParams, userId: number): Promise<Post | any> {
     try {
+      const user = await this.userService.findUser(userId);
+      if (!user) {
+        throw new UserNotFoundException();
+      }
       const newPost = this.postRepository.create({
-       ...params,
-        userId,
+        ...params,
+        user: user,
       });
-      
-  
-      console.log(newPost)
-      // const post = await this.postRepository.save(newPost);
-      // return post;
+      const post = await this.postRepository.save(newPost);
+      return post;
     } catch (error) {
       throw new Error(`Failed to create post: ${error.message}`);
     }
   }
 
-  findAll() {
-    return `This action returns all posts`;
-  }
+  async showPosts(): Promise<Post[]> {
+  //   const post = await this.postRepository.find({
+  //     relations: {
+  //         user: true,
+  //     },
+  // })
+  const post = await this.postRepository
+  .createQueryBuilder('post')
+  .leftJoinAndSelect('post.user', 'user')
+  .select(['post', 'user.id']) // Select the user ID along with the post
+  .getMany();
 
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
-  }
-
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+    if (!post) return null;
+    return post;
   }
 }

@@ -6,18 +6,22 @@ import {
   HttpStatus,
   Get,
   ValidationPipe,
+  Inject,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { BaseUser } from '../users/dto/base-user.dto';
+import { BaseUser } from '../user/dto/base-user.dto';
 import { Public } from './public/public-strategy';
-import { AuthUser } from 'src/utils/user.decorator';
-import { User } from 'src/utils/database/entities/user';
+import { AuthUser } from '../utils/user.decorator';
+import { User } from '../utils/database/entities/user';
+import { Services } from 'src/utils/constants';
+import { IAuthService } from './auth';
 
 @Controller('auth')
 @ApiTags('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    @Inject(Services.AUTH) private authService: IAuthService,
+  ) {}
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('login')

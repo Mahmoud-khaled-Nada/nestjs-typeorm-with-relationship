@@ -6,9 +6,11 @@ import { Post } from '../utils/database';
 import { Services } from '../utils/constants';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from '../auth/guard/auth.guard';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Post])],
+  imports: [TypeOrmModule.forFeature([Post]), UserModule],
+  controllers: [PostsController],
   providers: [
     {
       provide: Services.POSTS,
@@ -19,6 +21,5 @@ import { AuthGuard } from '../auth/guard/auth.guard';
       useClass: AuthGuard,
     },
   ],
-  controllers: [PostsController],
 })
 export class PostsModule {}

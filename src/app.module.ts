@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
+import { UserModule } from './user/user.module';
 import { PostsModule } from './posts/posts.module';
-import entities from './utils/database'; // Ensure correct import path for the entities array
+import entities from './utils/database';
 
 let envFilePath = '.env.development';
 if (process.env.ENVIRONMENT === 'PRODUCTION') envFilePath = '.env.production';
@@ -12,20 +12,19 @@ if (process.env.ENVIRONMENT === 'PRODUCTION') envFilePath = '.env.production';
 @Module({
   imports: [
     AuthModule,
-    UsersModule,
+    UserModule,
     ConfigModule.forRoot({ envFilePath }),
     TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: process.env.MYSQL_DB_HOST,
-      port: parseInt(process.env.MYSQL_DB_PORT),
-      username: process.env.MYSQL_DB_USERNAME,
-      password: process.env.MYSQL_DB_PASSWORD,
-      database: process.env.MYSQL_DB_NAME,
+      type: 'postgres',
+      host: process.env.PSQL_DB_HOST,
+      port: parseInt(process.env.PSQL_DB_PORT),
+      username: process.env.PSQL_DB_USERNAME,
+      password: process.env.PSQL_DB_PASSWORD,
+      database: process.env.PSQL_DB_NAME,
       synchronize: true,
-      entities, // Pass the entities array here
+      entities,
       logging: false,
     }),
-
     PostsModule,
   ],
 })
